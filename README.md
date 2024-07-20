@@ -243,3 +243,88 @@ export const userApi = { ... }:
 - Promise là một đối tượng đại diện cho một giá trị mà có thể sẽ xuất hiện trong tương lai (kết quả của một phép toán bất đồng bộ). Trong trường hợp này, Promise<UserProfile> có nghĩa là hàm getProfile trả về một Promise mà khi Promise đó được giải quyết (resolved), giá trị trả về sẽ có kiểu UserProfile.
 
 - Tóm lại, phương thức getProfile sẽ thực hiện một yêu cầu GET đến đường dẫn /public-profile và trả về một Promise. Khi Promise này được giải quyết, nó sẽ chứa dữ liệu của người dùng có kiểu UserProfile.
+
+### 09: Query Key: https://www.ezfrontend.com/docs/tanstack-query-key
+
+## 1 - Rules
+
+# NOTES
+- Data Type: Array
+- Usually, each item will be a string or object ['todos', { page: 1 }]
+- The order of items doesn't matter in object, but array
+- Should be unique, as each key will point to a piece of data
+
+# Source: https://tanstack.com/query/latest/docs/react/guides/query-keys
+
+- The order of items doesn't matter in object, but array
+
+```tsx
+// same
+const params1 = { page: 1, rows: 10 }
+const params2 = { rows: 10, page: 1 }
+
+// different
+const params1 = [ page: 1, rows: 10 ]
+const params2 = [ rows: 10, page: 1 ]
+```
+
+- Centralize query keys into one place for better management (Tập trung các khóa truy vấn vào một nơi để quản lý tốt hơn):
+
+- src/constants/query-keys.ts
+
+```tsx
+export const QueryKeys = {
+  TODO_LIST: 'TODO_LIST',
+  TODO_DETAILS: 'TODO_DETAILS',
+  // ...
+}
+```
+
+## 2 - Example key of todo details
+
+```tsx
+function useTodoDetails(todoId) {
+  return useQuery({
+    // NO, all todo details will reuse the same key
+    queryKey: [QueryKeys.TODO_DETAILS]
+  })
+}
+
+function useTodoDetails(todoId) {
+  return useQuery({
+    // YES, should include deps into query key
+    queryKey: [QueryKeys.TODO_DETAILS, todoId]
+  })
+}
+```
+
+## 3 - Example key of list of todo
+
+```tsx
+// params: { page: 1, rows: 10, status: 'completed' }
+
+function useTodoList(params) {
+  return useQuery({
+    // NO, as all pages will have the same key
+    queryKey: [QueryKeys.TODO_LIST]
+  })
+}
+
+function useTodoList(params) {
+  return useQuery({
+    // YES, each page will have one unique key
+    queryKey: [QueryKeys.TODO_LIST, params]
+  })
+}
+```
+
+### 10: Dependent Query: https://www.ezfrontend.com/docs/tanstack-dependent-query
+
+## Overview
+
+- What: lazy queries, only fetch when some conditions are met
+- When: fetch data based on some conditions
+- Where: pass conditions from components
+- Why: if conditions not match, it may fail when querying
+- How: use enabled props from useQuery
+

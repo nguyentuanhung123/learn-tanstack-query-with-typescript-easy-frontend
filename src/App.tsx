@@ -3,9 +3,9 @@ import React from 'react'
 import { useProfile } from '~/hooks'
 
 const App: React.FC = () => {
-  const { data: profile, isPending, isError, error } = useProfile()
+  const { data: profile, isLoading, isError, error } = useProfile()
 
-  if (isPending) {
+  if (isLoading) {
     return <div>Loading profile...</div>
   }
 
